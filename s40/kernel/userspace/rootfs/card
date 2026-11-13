@@ -1,0 +1,46 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Shared FAT mounts; never format or repartition. Boot sdlog explicitly requests rw.
+set -eu
+mounted() { grep -q " $1 " /proc/mounts; }
+case "${1:-status}" in
+status)
+    cat /proc/partitions
+    for disk in /dev/mmcblk0 /dev/mmcblk0p*; do
+        [ ! -b "$disk" ] || blkid "$disk" || true
+    done
+    grep ' /mnt/card \| /mnt/linux ' /proc/mounts || true
+    ;;
+mount)
+    mode=${2:-ro}
+    case "$mode" in ro|rw) ;; *) echo 'Use: card mount [ro|rw]' >&2; exit 2 ;; esac
+    if mounted /mnt/card; then
+        echo 'Card already mounted; card unmount before changing mode.' >&2
+        exit 1
+    fi
+    disk=/dev/mmcblk0
+    # Some S40 cards have a FAT boot sector at LBA0 plus a compatibility
+    # MBR entry also starting at LBA0. Prefer the whole FAT volume in that
+    # case; use p1 only when the whole disk does not contain a FAT volume.
+    if ! blkid /dev/mmcblk0 | grep -q 'TYPE="vfat"'; then
+        [ ! -b /dev/mmcblk0p1 ] || disk=/dev/mmcblk0p1
+    fi
+    [ -b "$disk" ] || { echo 'No SD block device detected.' >&2; exit 1; }
+    # The shared S40 volume is FAT. An ext4-only card can be mounted explicitly.
+    mount -t vfat -o "$mode,noatime,umask=022" "$disk" /mnt/card
+    echo "$disk mounted $mode on /mnt/card"
+    ;;
+unmount)
+    # The persistent boot logger must release its file before unmounting.
+    /bin/sdlog --stop
+    # A filesystem inside a card file must be unmounted first.
+    if mounted /mnt/linux; then umount /mnt/linux; fi
+    if mounted /mnt/card; then umount /mnt/card; fi
+    sync
+    echo 'Card unmounted.'
+    ;;
+*)
+    echo 'Use: card status | card mount [ro|rw] | card unmount' >&2
+    exit 2
+    ;;
+esac

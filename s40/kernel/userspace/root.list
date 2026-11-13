@@ -1,0 +1,85 @@
+# SPDX-License-Identifier: MIT
+dir /dev 0755 0 0
+nod /dev/console 0600 0 0 c 5 1
+nod /dev/null 0666 0 0 c 1 3
+nod /dev/kmsg 0600 0 0 c 1 11
+dir /proc 0555 0 0
+dir /sys 0555 0 0
+dir /tmp 1777 0 0
+file /init /work/initramfs/init 0755 0 0
+dir /bin 0755 0 0
+slink /sbin bin 0777 0 0
+dir /etc 0755 0 0
+dir /root 0700 0 0
+file /bin/busybox /work/initramfs/busybox 0755 0 0
+file /bin/memcheck /work/initramfs/memcheck 0755 0 0
+file /bin/memread /work/initramfs/memread 0755 0 0
+file /bin/rmprobe /work/initramfs/rmprobe 0755 0 0
+file /bin/fbtest /work/initramfs/fbtest 0755 0 0
+file /bin/drmtest /work/initramfs/drmtest 0755 0 0
+file /bin/card /project/userspace/rootfs/card 0755 0 0
+file /bin/hwinspect /project/userspace/rootfs/hwinspect 0755 0 0
+file /bin/sdlog /work/initramfs/sdlog 0755 0 0
+file /etc/profile /project/userspace/rootfs/profile 0644 0 0
+slink /bin/sh busybox 0777 0 0
+slink /bin/ash busybox 0777 0 0
+slink /bin/ls busybox 0777 0 0
+slink /bin/cat busybox 0777 0 0
+slink /bin/cp busybox 0777 0 0
+slink /bin/mv busybox 0777 0 0
+slink /bin/rm busybox 0777 0 0
+slink /bin/mkdir busybox 0777 0 0
+slink /bin/rmdir busybox 0777 0 0
+slink /bin/touch busybox 0777 0 0
+slink /bin/chmod busybox 0777 0 0
+slink /bin/ln busybox 0777 0 0
+slink /bin/pwd busybox 0777 0 0
+slink /bin/echo busybox 0777 0 0
+slink /bin/printf busybox 0777 0 0
+slink /bin/test busybox 0777 0 0
+slink /bin/[ busybox 0777 0 0
+slink /bin/[[ busybox 0777 0 0
+slink /bin/true busybox 0777 0 0
+slink /bin/false busybox 0777 0 0
+slink /bin/sleep busybox 0777 0 0
+slink /bin/uname busybox 0777 0 0
+slink /bin/head busybox 0777 0 0
+slink /bin/tail busybox 0777 0 0
+slink /bin/wc busybox 0777 0 0
+slink /bin/sort busybox 0777 0 0
+slink /bin/cut busybox 0777 0 0
+slink /bin/grep busybox 0777 0 0
+slink /bin/sed busybox 0777 0 0
+slink /bin/find busybox 0777 0 0
+slink /bin/xargs busybox 0777 0 0
+slink /bin/hexdump busybox 0777 0 0
+slink /bin/base64 busybox 0777 0 0
+slink /bin/dd busybox 0777 0 0
+slink /bin/dmesg busybox 0777 0 0
+slink /bin/ps busybox 0777 0 0
+slink /bin/free busybox 0777 0 0
+slink /bin/uptime busybox 0777 0 0
+slink /bin/kill busybox 0777 0 0
+slink /bin/killall busybox 0777 0 0
+slink /bin/mount busybox 0777 0 0
+slink /bin/losetup busybox 0777 0 0
+slink /bin/mkfs.vfat busybox 0777 0 0
+slink /bin/df busybox 0777 0 0
+slink /bin/du busybox 0777 0 0
+slink /bin/stat busybox 0777 0 0
+slink /bin/blkid busybox 0777 0 0
+slink /bin/fdisk busybox 0777 0 0
+slink /bin/sha256sum busybox 0777 0 0
+slink /bin/cmp busybox 0777 0 0
+dir /mnt 0755 0 0
+dir /mnt/card 0755 0 0
+dir /mnt/linux 0755 0 0
+slink /bin/umount busybox 0777 0 0
+slink /bin/sync busybox 0777 0 0
+slink /bin/stty busybox 0777 0 0
+slink /bin/ifconfig busybox 0777 0 0
+slink /bin/route busybox 0777 0 0
+slink /bin/ping busybox 0777 0 0
+slink /bin/nc busybox 0777 0 0
+slink /bin/telnetd busybox 0777 0 0
+slink /bin/telnet busybox 0777 0 0

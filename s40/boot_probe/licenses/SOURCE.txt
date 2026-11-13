@@ -1,0 +1,28 @@
+Nokia6303Linux includes the Linux kernel, BusyBox and GPL-covered boot code.
+
+Linux v6.12: adc218676eef25575469234709c2d87185ca223a
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+BusyBox: fc71374dfccd46448c62947269a35f1420d7ee28
+https://git.busybox.net/busybox
+musl: 7813e9119eb5fe681b6750b8a033a0490bca0941
+https://git.musl-libc.org/git/musl
+
+Build from the accompanying source using s40/build.sh. s40/kernel/fetch_sources.sh
+obtains the exact upstream revisions. Modifications are s40/kernel/overlay/,
+s40/kernel/prepare.py and the checked-in kernel and BusyBox configurations.
+Original userspace programs are in s40/kernel/userspace/.
+
+S40 Linux source: https://github.com/s40homebrew/linux
+Shared S40 SDK and build setup: https://github.com/s40homebrew/s40
+Keep these repositories in sibling linux/ and main/ directories, respectively,
+or set S40_SDK_ROOT to the SDK repository's absolute path.
+
+Linux and BusyBox are GPL version 2. The handoff and boot application carry
+GPL-2.0-or-later notices. Independent host tools, userspace, DT writer, capture
+helper and S40 launcher/runtime retain MIT notices. The combined JAR is
+conveyed under GPL version 2.
+The full musl and nolibc notices are MUSL.txt and NOLIBC.txt.
+
+Distribute complete corresponding source
+and build materials with this binary, including the pinned upstream sources
+and S40 runtime. See the source tree's s40/README.md and s40/UPSTREAM.md.

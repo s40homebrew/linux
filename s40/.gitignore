@@ -1,0 +1,10 @@
+/build/
+/dist/
+/upstream/
+/kernel/build/
+__pycache__/
+*.pyc
+.DS_Store
+# Override upstream kernel patterns for port source files.
+!*.S
+!.dockerignore

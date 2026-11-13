@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config RAPS_DMA
+	bool "RAPS linear DMA controller"
+	depends on ARCH_NOKIA_RAPS
+	select DMA_ENGINE
+	select DMA_VIRTUAL_CHANNELS
+	help
+	  Interrupt-driven, 32-bit memory-to-LCD transfers on RAPS.

@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: MIT
+export PATH=/bin:/sbin HOME=/root TERM=vt100
+PS1='rm443# '
+alias hw='cat /sys/devices/platform/20030700.power/status /sys/kernel/rm443_secure_watchdog/status'
+alias swd='cat /sys/kernel/rm443_secure_watchdog/status'
+alias usb='cat /sys/devices/platform/20036600.usb/status'
+lcd() {
+    local path=/sys/class/drm/card0/device result=0 attribute=
+    if [ "$#" -gt 1 ]; then
+        echo 'Usage: lcd [status|pio|dma|rgb565|rgb666|rgb888]' >&2
+        return 2
+    fi
+    case "${1:-status}" in
+        status) ;;
+        pio|dma) attribute=transport ;;
+        rgb565|rgb666|rgb888) attribute=pixel_format ;;
+        *) echo 'Usage: lcd [status|pio|dma|rgb565|rgb666|rgb888]' >&2; return 2 ;;
+    esac
+    if [ -n "$attribute" ]; then
+        printf '%s\n' "$1" > "$path/$attribute"
+        result=$?
+    fi
+    cat "$path/transfer_stats"
+    return "$result"
+}
+dmatest() {
+    local path=/sys/class/drm/card0/device/dma_test result mode width height size
+    local usage='Usage: dmatest [status|poll [width height]|irq [width height]|poll-full|irq-full|sweep [poll|irq]]'
+    mode=${1:-status}
+    case "$mode" in
+        status)
+            if [ "$#" -le 1 ]; then
+                cat "$path"
+                return $?
+            fi
+            mode=invalid
+            ;;
+        poll|irq)
+            width=${2:-16}
+            height=${3:-16}
+            if [ "$#" -ne 1 ] && [ "$#" -ne 3 ]; then mode=invalid; fi
+            ;;
+        poll-full|irq-full)
+            mode=${mode%-full}
+            width=240
+            height=320
+            if [ "$#" -ne 1 ]; then mode=invalid; fi
+            ;;
+        sweep)
+            mode=${2:-irq}
+            if [ "$#" -gt 2 ] || { [ "$mode" != poll ] && [ "$mode" != irq ]; }; then
+                mode=invalid
+            else
+                for size in 2x1 16x16 32x32 64x64 128x128 240x128 240x192 240x256 240x320; do
+                    dmatest "$mode" "${size%x*}" "${size#*x}" || return $?
+                    sleep 1
+                done
+                return 0
+            fi
+            ;;
+        *) mode=invalid ;;
+    esac
+    if [ "$mode" = invalid ]; then
+        echo "$usage" >&2
+        return 2
+    fi
+    echo "Starting $mode DMA test ${width}x${height}"
+    printf '%s %s %s\n' "$mode" "$width" "$height" > "$path"
+    result=$?
+    cat "$path"
+    return "$result"
+}
+echo 'Linux on Nokia 6303'
+echo 'Commands: hw, swd, usb, card, lcd, fbtest, drmtest, dmatest'
+cd /root

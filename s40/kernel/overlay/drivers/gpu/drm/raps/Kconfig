@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config DRM_RM443
+	bool "RAPS LCD controller"
+	depends on DRM && ARCH_NOKIA_RAPS
+	select DRM_KMS_HELPER
+	select DRM_GEM_DMA_HELPER
+	help
+	  Command-mode 240x320 display on Nokia RM-443. Provides atomic KMS,
+	  memory-backed framebuffers and damage updates to the LCD FIFO.
+	  The panel power and bus timing must be initialized by the boot firmware.

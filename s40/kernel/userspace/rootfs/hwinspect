@@ -1,0 +1,158 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Read-only diagnostics. Only "collect DIR" creates files; it never mounts media.
+set -u
+export LC_ALL=C
+inspect=/sys/firmware/rm443_inspect
+read_errors=0
+
+text_file() {
+    printf '\n[%s]\n' "$1"
+    if [ -r "$1" ]; then
+        cat "$1" || { read_errors=1; return 1; }
+        printf '\n'
+    else
+        printf 'unavailable on this kernel/device\n'
+    fi
+}
+
+summary() {
+    uname -a
+    text_file /proc/uptime
+    text_file /proc/cmdline
+    text_file /sys/class/drm/card0/device/transfer_stats
+    text_file /sys/kernel/rm443_secure_watchdog/status
+    text_file /sys/devices/platform/20030700.power/status
+    text_file /sys/devices/platform/20036600.usb/status
+    text_file "$inspect/layout"
+    return "$read_errors"
+}
+
+memory() {
+    text_file /proc/cpuinfo
+    text_file /proc/meminfo
+    text_file /proc/iomem
+    text_file /proc/1/maps
+    text_file /proc/vmallocinfo
+    text_file /proc/zoneinfo
+    text_file /sys/kernel/debug/kernel_page_tables
+    text_file "$inspect/layout"
+    printf '\nMemory values are live observations, not an atomic machine snapshot.\n'
+    return "$read_errors"
+}
+
+cpu() {
+    text_file /proc/cpuinfo
+    text_file "$inspect/cpu"
+    return "$read_errors"
+}
+
+card_info() {
+    text_file /proc/partitions
+    text_file /proc/mounts
+    found=0
+    for device in /sys/bus/mmc/devices/mmc*; do
+        [ -d "$device" ] || continue
+        found=1
+        for attr in type name cid csd date ocr scr serial manfid oemid; do
+            [ ! -r "$device/$attr" ] || text_file "$device/$attr"
+        done
+    done
+    [ "$found" = 1 ] || printf '\nNo MMC device attributes available.\n'
+    for device in /sys/class/block/mmcblk*; do
+        [ -d "$device" ] || continue
+        for attr in size ro stat queue/logical_block_size; do
+            [ ! -r "$device/$attr" ] || text_file "$device/$attr"
+        done
+    done
+    printf '\nNo card mount, filesystem write, or raw-sector probe was performed.\n'
+    return "$read_errors"
+}
+
+boot_info() {
+    text_file /proc/cmdline
+    text_file "$inspect/layout"
+    if [ ! -d "$inspect" ]; then
+        printf '\nBoot snapshot interface is unavailable on this kernel.\n'
+        return "$read_errors"
+    fi
+    for name in boot_trace ramlog secure_state rom_map io_map ffc_map ffe_map; do
+        printf '\n[%s/%s]\n' "$inspect" "$name"
+        if [ -r "$inspect/$name" ]; then
+            hexdump -C "$inspect/$name" || return 1
+        else
+            printf 'unavailable\n'
+        fi
+    done
+    return "$read_errors"
+}
+
+collect() {
+    directory=$1
+    umask 077
+    case "$directory" in /*) ;; *) directory=./$directory ;; esac
+    # mkdir without -p refuses an existing directory, file or symlink.
+    if ! mkdir "$directory"; then
+        printf 'Use a new directory beneath an existing writable parent.\n' >&2
+        return 1
+    fi
+    result=0
+    printf 'hwinspect v1\nMissing interfaces are listed, not treated as fatal.\n' > "$directory/manifest.txt"
+    summary > "$directory/summary.txt" 2> "$directory/errors.txt" || result=1
+    memory > "$directory/memory.txt" 2>> "$directory/errors.txt" || result=1
+    cpu > "$directory/cpu.txt" 2>> "$directory/errors.txt" || result=1
+    card_info > "$directory/card.txt" 2>> "$directory/errors.txt" || result=1
+    boot_info > "$directory/boot.txt" 2>> "$directory/errors.txt" || result=1
+    dmesg > "$directory/dmesg.txt" 2>> "$directory/errors.txt" || result=1
+    ps > "$directory/processes.txt" 2>> "$directory/errors.txt" || result=1
+    text_file /proc/interrupts > "$directory/interrupts.txt" 2>> "$directory/errors.txt" || result=1
+    # Only these bounded boot artifacts are automatic. Never copy all physical
+    # RAM into tmpfs: that could exhaust the phone's own memory.
+    for name in boot_trace ramlog secure_state rom_map io_map ffc_map ffe_map; do
+        if [ -r "$inspect/$name" ]; then
+            if cat "$inspect/$name" > "$directory/$name.bin" 2>> "$directory/errors.txt"; then
+                wc -c "$directory/$name.bin" >> "$directory/manifest.txt"
+            else
+                printf '%s: read failed; output may be partial\n' "$name" >> "$directory/manifest.txt"
+                result=1
+            fi
+        else
+            printf '%s: unavailable\n' "$name" >> "$directory/manifest.txt"
+        fi
+    done
+    if [ -r /sys/firmware/fdt ]; then
+        if cat /sys/firmware/fdt > "$directory/device-tree.dtb" 2>> "$directory/errors.txt"; then
+            wc -c "$directory/device-tree.dtb" >> "$directory/manifest.txt"
+        else
+            printf 'device-tree.dtb: read failed; output may be partial\n' >> "$directory/manifest.txt"
+            result=1
+        fi
+    else
+        printf 'device-tree.dtb: unavailable\n' >> "$directory/manifest.txt"
+    fi
+    printf 'collection_status=%s\n' "$result" >> "$directory/manifest.txt"
+    printf 'Saved diagnostics to %s\n' "$directory"
+    printf 'Collection does not provide a crash-durable checkpoint; use sdlog for that.\n'
+    return "$result"
+}
+
+case "${1:-summary}" in
+    summary|memory|card|boot|cpu)
+        [ "$#" -le 1 ] || { printf 'Unexpected argument.\n' >&2; exit 2; }
+        case "${1:-summary}" in
+            summary) summary ;;
+            memory) memory ;;
+            cpu) cpu ;;
+            card) card_info ;;
+            boot) boot_info ;;
+        esac
+        ;;
+    collect)
+        [ "$#" = 2 ] && [ -n "$2" ] || { printf 'Use: hwinspect collect NEW_DIRECTORY\n' >&2; exit 2; }
+        collect "$2"
+        ;;
+    *)
+        printf 'Use: hwinspect [summary|memory|cpu|card|boot|collect NEW_DIRECTORY]\n' >&2
+        exit 2
+        ;;
+esac

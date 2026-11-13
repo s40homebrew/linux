@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config ARCH_NOKIA_RAPS
+	bool "Nokia 6303 classic (RM-443)"
+	depends on ARCH_MULTI_V5 && CPU_LITTLE_ENDIAN
+	select CPU_ARM926T
+	select IRQ_DOMAIN
+	select TIMER_OF
+	select FONT_SUPPORT
+	select FONT_8x16
+	select INPUT
+	select INPUT_EVDEV
+	select WATCHDOG
+	select WATCHDOG_CORE
+	select WATCHDOG_SYSFS
+	select WATCHDOG_HANDLE_BOOT_ENABLED
+	select SERIAL_CORE
+	select SERIAL_CORE_CONSOLE
+	select SERIAL_EARLYCON
+	help
+	  Platform support for the Nokia 6303 classic: interrupts, timers,
+	  display, keypad, watchdogs, USB, SD storage and RAM logging.
+
+config RM443_INSPECT
+	bool "Read-only RM-443 retained-state inspection"
+	depends on ARCH_NOKIA_RAPS && !SMP
+	default n
+	help
+	  Expose bounded reserved boot records and captured page-table snapshots
+	  under /sys/firmware/rm443_inspect, only with rm443.inspect=1. This does
+	  not expose general RAM, ROM, device registers or writable mappings.
+
+config RM443_PROBE
+	bool "RM-443 privileged runtime experiments"
+	depends on ARCH_NOKIA_RAPS && !SMP
+	default n
+	help
+	  Provide /dev/rm443_probe for explicit RAM uploads, ROM calls, uploaded
+	  ARM/Thumb routines and width-specific physical or bridge-mapped reads.
+	  Requires CAP_SYS_RAWIO. Registration does not run experiments. A hung
+	  call or hardware bus access may require a reboot.

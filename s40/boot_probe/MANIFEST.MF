@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+MIDlet-Name: Linux
+MIDlet-Version: 0.8.17
+MIDlet-Vendor: S40 Homebrew
+MIDlet-1: Linux,,Nokia6303Linux
+MicroEdition-Configuration: CLDC-1.1
+MicroEdition-Profile: MIDP-2.1
+S40-Native-Chunk-Bytes: 65536
