@@ -15,7 +15,7 @@
 #include "payload_layout.h"
 #include "../../handoff/relocation_abi.h"
 #include "../../handoff/image_hash.h"
-#include "firmware.h"
+#include "firmware/bindings.h"
 #include "../../kernel/overlay/arch/arm/mach-nokia-raps/rm443_boot_marker.h"
 
 extern const uint8_t linux_image_start[], linux_image_end[], handoff_start[], handoff_end[];
@@ -30,12 +30,7 @@ static struct {
     uint32_t pixels[64 * 40];
 } marker_bitmap;
 static int marker_token = -1;
-static struct {
-    uint32_t *pixels;
-    uint16_t width, height;
-    uint8_t unused[2], format, pad;
-    uint32_t extra[3];
-} marker_canvas;
+static struct fw_gdi_canvas marker_canvas;
 
 static void marker_close(void) {
     if (marker_token != -1) {

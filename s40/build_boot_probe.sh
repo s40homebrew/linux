@@ -23,7 +23,7 @@ export S40_APP_DIR="$PROJECT_DIR/boot_probe"
 export S40_BUILD_DIR="$PROJECT_DIR/build/boot_probe"
 export S40_DIST_DIR="$PROJECT_DIR/dist"
 # Mark ownership before embedding creates generated files in the build folder.
-python3 "$S40_SDK_ROOT/scripts/clean_build_outputs.py" java "$SHARED_DIR" "$S40_BUILD_DIR" build/linux6303-boot "$S40_APP_DIR"
+python3 "$S40_SDK_ROOT/tools/clean_build_outputs.py" java "$SHARED_DIR" "$S40_BUILD_DIR" build/linux6303-boot "$S40_APP_DIR"
 python3 "$PROJECT_DIR/tools/embed_payload.py"
 bash "$SHARED_DIR/build.sh" linux6303-boot
 python3 "$PROJECT_DIR/tools/boot_build_cache.py" store

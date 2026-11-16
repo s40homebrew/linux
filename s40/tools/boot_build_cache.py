@@ -69,22 +69,17 @@ def inputs():
                PROJECT / "tools/boot_build_cache.py", PROJECT / "tools/embed_payload.py",
                PROJECT / "tools/handoff_layout.py", PROJECT / "kernel/build/Image",
                PROJECT / "kernel/build/image-layout.json", SHARED / "build.sh",
-               SDK_ROOT / "tools/env.sh", SDK_ROOT / "scripts/clean_build_outputs.py",
+               SDK_ROOT / "tools/env.sh", SDK_ROOT / "tools/clean_build_outputs.py",
                PROJECT / "kernel/overlay/arch/arm/mach-nokia-raps/rm443_boot_marker.h",
                PROJECT / "kernel/overlay/arch/arm/mach-nokia-raps/rm443_secure_wdt_abi.h",
                APP / "build-config.sh"]
     for path in (APP / "native", APP / "src", PROJECT / "handoff",
-                 SHARED / "runtime/include",
-                 SHARED / "runtime/libc/include", SHARED / "bootstrap"):
+                 SHARED / "include", SHARED / "src"):
         sources.extend(files_under(path))
-    for directory in ('runtime/native', 'runtime/java'):
-        sources.extend(path for path in (SHARED / directory).iterdir() if path.is_file())
-    for directory in ("resolver", "profiles"):
-        sources.extend((SHARED / directory).glob("*.java"))
     # Match the shared build's actual tools. Editing an unrelated maintenance
     # packager must not recompile Linux; packager changes only need repackaging.
     sources.extend(SHARED / 'tools' / name for name in
-                   ('gen_imports.py', 'pack.py', 'gen_native_limits.py', 'preverify.py'))
+                   ('sources.sh', 'native_contract.py', 'gen_imports.py', 'pack.py', 'gen_native_limits.py', 'preverify.py'))
     for key, default in (
         ("PROGUARD_JAR", SDK_ROOT / "tools/.deps/proguard-7.10.0/lib/proguard.jar"),
         ("LEGACY_JAVAC", SDK_ROOT / "tools/.deps/legacy-javac.jar"),
