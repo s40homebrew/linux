@@ -5,9 +5,8 @@ Linux 6.12 and BusyBox, started from a Java ME app on the Nokia 6303 classic
 The launcher discovers firmware services on 08.90 and 10.12. Linux uses 30 MiB
 of the phone's 32 MiB RAM.
 
-LCD, keypad, timers, watchdogs and USB serial work. USB networking and restart
-are experimental. Audio, cellular, Bluetooth, camera, internal
-flash and suspend are not implemented.
+The port includes LCD, keypad, timer, watchdog, USB and SD/MMC drivers. Audio,
+cellular, Bluetooth, camera, internal flash and suspend are not implemented.
 
 ## Build
 
@@ -55,6 +54,9 @@ The shell includes BusyBox, `hwinspect`, `memread`, `rmprobe`, `fbtest`,
 Key 0 or the centre key shows the keypad menu; 8 powers off and 9 restarts
 after unmounting.
 
+The [usage guide](docs/usage.md) lists keypad actions, inspection interfaces,
+display commands and storage setup.
+
 USB networking uses `192.168.7.2/24`, with Telnet on port 23 and no login.
 Assign the host interface `192.168.7.1/24`, then run `telnet 192.168.7.2`.
 
@@ -77,6 +79,15 @@ Paths below are relative to `s40/`:
 - `kernel/overlay/`: RAPS board support and drivers.
 - `kernel/userspace/`: PID 1, shell setup, storage and diagnostic utilities.
 - `kernel/prepare.py`: applies the overlay and Kbuild changes.
+- `probe/` and `mmu_probe/`: optional CPU/MMU inspection MIDlets.
+- `tests/`: host and ARM component checks.
+- `docs/`: hardware findings, user guides and boot architecture.
+
+Build the optional probes with `bash s40/build_probe.sh` or
+`bash s40/build_mmu_probe.sh`. They share the same SDK and emit JAR/JAD pairs
+under `s40/dist/`. The MMU probe and launcher share one capture implementation.
+See [research tools](docs/research.md) for capture and emulator commands and the
+[test guide](tests/README.md) for component checks.
 
 ## Licenses
 
